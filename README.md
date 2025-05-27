@@ -183,15 +183,80 @@ The model was evaluated on the test set using common classification metrics:
 * Results demonstrate effective generalization to unseen chest X-ray images.
 * The model serves as a **baseline** to compare with pretrained models such as VGG16, ResNet50, and InceptionV3.
 
-### ✅ Optional: Replace paths
+## 🚀 Deployment with Streamlit
 
-You can update the image paths in the markdown:
+This project includes a **Streamlit web application** that allows users to upload chest X-ray images and get real-time predictions from the trained CNN models (e.g., VGG16, ResNet50, InceptionV3, or Custom CNN).
 
-```markdown
-![Training Curves](./images/training_accuracy_loss.png)
-![Confusion Matrix](./images/confusion_matrix.png)
-![Sample Predictions](./images/prediction_grid.png)
+### 📦 Prerequisites
+
+Make sure you have the required packages installed:
+
+```bash
+pip install streamlit tensorflow keras opencv-python pillow numpy
 ```
+
+### ▶️ Running the App Locally
+
+To launch the app locally, run the following command from the project directory:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+### 📁 Suggested File Structure
+
+```
+.
+├── streamlit_app.py           # Main Streamlit application
+├── CNN_Classification.h5      # Trained model (or ResNet50.h5, VGG16.h5, etc.)
+├── utils.py                   # (Optional) Preprocessing helpers
+├── requirements.txt
+└── README.md
+```
+
+### 💡 Features
+
+* Upload chest X-ray images (`.jpg`, `.jpeg`, `.png`)
+* Automatic grayscale-to-RGB conversion if needed
+* Real-time prediction with probability score
+* Clear output: **Normal** or **Pneumonia**
+* Lightweight and deployable with Streamlit Cloud
+
+---
+
+### 🧪 Example Streamlit Code
+
+```python
+import streamlit as st
+import numpy as np
+import tensorflow as tf
+from PIL import Image
+
+# Load the trained model
+model = tf.keras.models.load_model("CNN_Classification.h5")
+
+st.title("🧠 Pneumonia Detection from Chest X-rays")
+st.write("Upload a chest X-ray image to receive a prediction.")
+
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("L").resize((500, 500))
+    img_array = np.array(image) / 255.0
+    img_rgb = np.repeat(img_array[..., np.newaxis], 3, axis=-1)
+    img_input = np.expand_dims(img_rgb, axis=0)
+
+    st.image(image, caption="Uploaded X-ray", use_column_width=True)
+
+    prediction = model.predict(img_input)[0][0]
+    label = "PNEUMONIA" if prediction >= 0.5 else "NORMAL"
+    confidence = prediction if prediction >= 0.5 else 1 - prediction
+
+    st.markdown(f"### 🩺 Prediction: **{label}**")
+    st.markdown(f"**Confidence:** {confidence:.2%}")
+```
+
+---
 
 ## 🚀 How to Run
 
