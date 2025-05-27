@@ -1,43 +1,116 @@
 import streamlit as st
-import numpy as np
-import tensorflow as tf
 from tensorflow.keras.models import load_model
 from PIL import Image
-import io
+import numpy as np
+import os
+from reportlab.pdfgen import canvas
+import datetime
+import pandas as pd
+from io import BytesIO
 
-# ✅ Precisa vir primeiro!
+# Configuração da página
 st.set_page_config(page_title="Pneumonia Detector", layout="centered")
 
-st.title("🔍 Pneumonia Detector com CNN")
-st.markdown("Faça upload de uma imagem de raio-X de tórax para verificar indícios de pneumonia.")
+# Traduções
+translations = {
+    "pt": {
+        "title": "Classificador de Pneumonia por Raio-X",
+        "upload": "📤 Envie a imagem de raio-X",
+        "language": "🌐 Idioma",
+        "button": "🔍 Classificar",
+        "result": "Resultado da Classificação:",
+        "class": "Classe Prevista",
+        "probability": "Probabilidade",
+        "alert": "⚠️ Indício de Pneumonia detectado. Procure um especialista.",
+        "normal": "✅ Sem indício de Pneumonia.",
+        "download": "⬇️ Baixar Laudo em PDF",
+        "history": "📚 Histórico de Classificações",
+    },
+    "en": {
+        "title": "Pneumonia X-ray Classifier",
+        "upload": "📤 Upload X-ray image",
+        "language": "🌐 Language",
+        "button": "🔍 Classify",
+        "result": "Classification Result:",
+        "class": "Predicted Class",
+        "probability": "Probability",
+        "alert": "⚠️ Indication of Pneumonia detected. Please consult a specialist.",
+        "normal": "✅ No indication of Pneumonia.",
+        "download": "⬇️ Download PDF Report",
+        "history": "📚 Classification History",
+    }
+}
 
-# 📦 Carregar o modelo (com cache)
+# Carregar modelo
 @st.cache_resource
 def load_cnn_model():
-    model = load_model("models/CNN_Classification_1.h5")  # ajuste se estiver em outro caminho
-    return model
+    return load_model("models/CNN_Classification_1.h5")
 
 model = load_cnn_model()
 
-# 📷 Upload da imagem
-uploaded_file = st.file_uploader("📁 Escolha a imagem (formato PNG ou JPG)", type=["png", "jpg", "jpeg"])
+# Definir idioma
+lang = st.selectbox("🌐 Language / Idioma", options=["pt", "en"], index=0)
+t = translations[lang]
+
+st.title(t["title"])
+
+uploaded_file = st.file_uploader(t["upload"], type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    # Abrir e exibir imagem
-    image = Image.open(uploaded_file).convert('L')  # grayscale
-    st.image(image, caption="Imagem carregada", use_container_width=True)
+    image = Image.open(uploaded_file).convert("L")  # grayscale
+    image_resized = image.resize((500, 500))
+    img_array = np.expand_dims(np.array(image_resized) / 255.0, axis=(0, -1))  # (1, 500, 500, 1)
+    st.image(image_resized, caption="X-ray", use_column_width=True)
 
-    # Pré-processamento
-    image = image.resize((150, 150))  # mesmo tamanho usado no treino
-    img_array = np.array(image).astype("float32") / 255.0
-    img_array = np.expand_dims(img_array, axis=(0, -1))  # shape final: (1, 150, 150, 1)
+    if st.button(t["button"]):
+        prediction = model.predict(img_array)[0][0]
+        label = "PNEUMONIA" if prediction >= 0.5 else "NORMAL"
+        probability = prediction if prediction >= 0.5 else 1 - prediction
 
-    # 🧠 Previsão
-    prediction = model.predict(img_array)[0][0]
+        st.markdown(f"### {t['result']}")
+        st.write(f"**{t['class']}:** {label}")
+        st.write(f"**{t['probability']}:** {probability * 100:.2f}%")
+        
+        if label == "PNEUMONIA":
+            st.error(t["alert"])
+        else:
+            st.success(t["normal"])
 
-    # Resultado
-    st.markdown("### 🧪 Resultado da Classificação:")
-    if prediction >= 0.5:
-        st.error(f"**Classe Prevista:** PNEUMONIA\n\n🔺 Probabilidade: {prediction*100:.2f}%\n\n⚠️ Indício de pneumonia detectado. Procure um especialista.")
-    else:
-        st.success(f"**Classe Prevista:** NORMAL\n\n✅ Probabilidade: {(1 - prediction)*100:.2f}%\n\n🟢 Nenhum indício de pneumonia detectado.")
+        # Salvar histórico
+        history = pd.DataFrame([{
+            "timestamp": datetime.datetime.now().isoformat(),
+            "filename": uploaded_file.name,
+            "class": label,
+            "probability": f"{probability * 100:.2f}%"
+        }])
+
+        history_file = "classification_history.csv"
+        if os.path.exists(history_file):
+            old = pd.read_csv(history_file)
+            history = pd.concat([old, history], ignore_index=True)
+
+        history.to_csv(history_file, index=False)
+
+        # Gerar PDF
+        buffer = BytesIO()
+        c = canvas.Canvas(buffer)
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(100, 800, f"{t['result']}")
+        c.setFont("Helvetica", 12)
+        c.drawString(100, 770, f"{t['class']}: {label}")
+        c.drawString(100, 750, f"{t['probability']}: {probability * 100:.2f}%")
+        c.drawString(100, 730, f"Data/Hora: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        c.save()
+
+        st.download_button(
+            label=t["download"],
+            data=buffer.getvalue(),
+            file_name="laudo_pneumonia.pdf",
+            mime="application/pdf"
+        )
+
+# Mostrar histórico
+if os.path.exists("classification_history.csv"):
+    st.subheader(t["history"])
+    df_hist = pd.read_csv("classification_history.csv")
+    st.dataframe(df_hist.tail(10), use_container_width=True)
