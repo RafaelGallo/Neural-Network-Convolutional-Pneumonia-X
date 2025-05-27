@@ -1,42 +1,42 @@
 import streamlit as st
 import numpy as np
 import tensorflow as tf
-from PIL import Image
-import os
+from tensorflow.keras.models import load_model
+from PIL import Image, ImageOps
 
-# Caminho local do modelo treinado
-MODEL_PATH = os.path.join("models", "CNN_Classification_1.h5")
-
-# Carregar o modelo CNN
-@st.cache_resource
-def load_model():
-    model = tf.keras.models.load_model(MODEL_PATH)
-    return model
-
-model = load_model()
-
-# Configurações da interface
+# ✅ Este deve ser o primeiro comando relacionado ao Streamlit
 st.set_page_config(page_title="Pneumonia Detector", layout="centered")
-st.title("🧠 Pneumonia Detection from Chest X-Rays")
-st.markdown("Upload a chest X-ray image (JPG/PNG) and let the model predict if it's **Normal** or **Pneumonia**.")
 
-# Upload da imagem
-uploaded_file = st.file_uploader("Upload X-ray image", type=["jpg", "jpeg", "png"])
+# 🎯 Título e descrição
+st.title("🩺 Pneumonia X-Ray Classifier")
+st.write("Este app usa uma CNN treinada para classificar imagens de raio-X como **NORMAL** ou **PNEUMONIA**.")
+
+# 📂 Upload da imagem
+uploaded_file = st.file_uploader("Faça o upload de uma imagem de raio-X (formato PNG ou JPG)", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    # Preprocessamento da imagem
-    image = Image.open(uploaded_file).convert("L").resize((500, 500))
-    st.image(image, caption="Uploaded Image", use_column_width=True)
-    
-    # Converter para array, normalizar e adicionar canal RGB + batch dimension
-    img_array = np.array(image) / 255.0
-    img_rgb = np.repeat(img_array[..., np.newaxis], 3, axis=-1)
-    img_input = np.expand_dims(img_rgb, axis=0)
+    image = Image.open(uploaded_file).convert("L")  # Converte para escala de cinza
+    st.image(image, caption='Imagem carregada', use_column_width=True)
 
-    # Predição
-    prediction = model.predict(img_input)[0][0]
-    label = "PNEUMONIA" if prediction >= 0.5 else "NORMAL"
-    confidence = prediction if prediction >= 0.5 else 1 - prediction
+    # 🔄 Preprocessamento
+    img_resized = ImageOps.fit(image, (224, 224), Image.Resampling.LANCZOS)
+    img_array = np.asarray(img_resized) / 255.0
+    img_array = img_array.reshape(1, 224, 224, 1)  # (batch, height, width, channels)
 
-    st.markdown(f"### 🩺 Prediction: **{label}**")
-    st.markdown(f"**Confidence:** {confidence:.2%}")
+    # 📥 Carrega o modelo (ajuste o caminho conforme necessário)
+    model = load_model("models/CNN_Classification_1.h5")
+
+    # 🔍 Predição
+    prediction = model.predict(img_array)
+    prob = float(prediction[0][0])
+    label = "PNEUMONIA" if prob >= 0.5 else "NORMAL"
+
+    # 🎯 Exibe resultado
+    st.subheader("Resultado:")
+    st.markdown(f"**Classe prevista**: :orange[{label}]")
+    st.markdown(f"**Probabilidade**: `{prob:.2%}`")
+
+    if label == "PNEUMONIA":
+        st.warning("⚠️ Indício de pneumonia detectado. Consulte um médico especialista.")
+    else:
+        st.success("✅ Pulmões normais detectados.")
