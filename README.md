@@ -272,6 +272,22 @@ The app allows you to:
 
 [![Streamlit App](https://img.shields.io/badge/launch-app-brightgreen?logo=streamlit)](https://neural-network-convolutional-pneumonia-x-hc6qwxafrsdnvb3kcdq8h.streamlit.app/)
 
+## 🖼️ Test Images
+
+To try out the model with real chest X-ray examples, you can use the test images provided in the repository:
+
+📁 [Test Image Samples](https://github.com/RafaelGallo/Neural-Network-Convolutional-Pneumonia-X/tree/main/data)
+
+This folder contains:
+
+- ✅ Chest X-rays classified as **NORMAL**
+- 🔴 Chest X-rays classified as **PNEUMONIA** (bacterial and viral)
+
+You can upload these directly in the [Streamlit App](https://neural-network-convolutional-pneumonia-x-hc6qwxafrsdnvb3kcdq8h.streamlit.app/) to observe model predictions in real time.
+
+| Normal Case | Pneumonia Case |
+|-------------|----------------|
+| ![Normal](https://github.com/RafaelGallo/Neural-Network-Convolutional-Pneumonia-X/blob/main/img/007.png?raw=true) | ![Pneumonia](https://github.com/RafaelGallo/Neural-Network-Convolutional-Pneumonia-X/blob/main/img/006.png?raw=true) |
 
 ---
 ## 🚀 How to Run
