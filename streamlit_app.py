@@ -1,42 +1,49 @@
 import streamlit as st
 import numpy as np
-import tensorflow as tf
 from tensorflow.keras.models import load_model
-from PIL import Image, ImageOps
+from PIL import Image
 
-# ✅ Este deve ser o primeiro comando relacionado ao Streamlit
+# ⚙️ Configuração inicial da página (deve ser a 1ª linha Streamlit)
 st.set_page_config(page_title="Pneumonia Detector", layout="centered")
 
-# 🎯 Título e descrição
-st.title("🩺 Pneumonia X-Ray Classifier")
-st.write("Este app usa uma CNN treinada para classificar imagens de raio-X como **NORMAL** ou **PNEUMONIA**.")
-
-# 📂 Upload da imagem
-uploaded_file = st.file_uploader("Faça o upload de uma imagem de raio-X (formato PNG ou JPG)", type=["png", "jpg", "jpeg"])
-
-if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("L")  # Converte para escala de cinza
-    st.image(image, caption='Imagem carregada', use_column_width=True)
-
-    # 🔄 Preprocessamento
-    img_resized = ImageOps.fit(image, (224, 224), Image.Resampling.LANCZOS)
-    img_array = np.asarray(img_resized) / 255.0
-    img_array = img_array.reshape(1, 224, 224, 1)  # (batch, height, width, channels)
-
-    # 📥 Carrega o modelo (ajuste o caminho conforme necessário)
+# 🧠 Carrega o modelo CNN treinado
+@st.cache_resource
+def load_cnn_model():
     model = load_model("models/CNN_Classification_1.h5")
+    return model
 
-    # 🔍 Predição
-    prediction = model.predict(img_array)
-    prob = float(prediction[0][0])
-    label = "PNEUMONIA" if prob >= 0.5 else "NORMAL"
+model = load_cnn_model()
 
-    # 🎯 Exibe resultado
-    st.subheader("Resultado:")
-    st.markdown(f"**Classe prevista**: :orange[{label}]")
-    st.markdown(f"**Probabilidade**: `{prob:.2%}`")
+# 🎨 Estilo e título
+st.title("🩺 Pneumonia X-Ray Classifier")
+st.markdown("Upload a chest X-ray image to detect if the patient likely has **pneumonia** or is **normal**.")
 
-    if label == "PNEUMONIA":
-        st.warning("⚠️ Indício de pneumonia detectado. Consulte um médico especialista.")
+# 📤 Upload de imagem
+uploaded_file = st.file_uploader("Upload X-ray Image", type=["jpg", "jpeg", "png"])
+
+# 🖼️ Visualização + Previsão
+if uploaded_file is not None:
+    st.image(uploaded_file, caption="Uploaded X-Ray", use_column_width=True)
+
+    # 🔍 Processamento da imagem
+    image = Image.open(uploaded_file)
+    expected_shape = model.input_shape  # (None, 224, 224, 1) ou (None, 224, 224, 3)
+
+    if expected_shape[1:] == (224, 224, 3):
+        image = image.convert("RGB")
+        img_array = np.asarray(image.resize((224, 224))) / 255.0
+        img_array = img_array.reshape(1, 224, 224, 3)
     else:
-        st.success("✅ Pulmões normais detectados.")
+        image = image.convert("L")
+        img_array = np.asarray(image.resize((224, 224))) / 255.0
+        img_array = img_array.reshape(1, 224, 224, 1)
+
+    # 📊 Previsão
+    prediction = model.predict(img_array)[0][0]
+
+    # 🧾 Resultado
+    st.subheader("🔍 Prediction Result:")
+    if prediction >= 0.5:
+        st.error(f"**{prediction:.2%} chance of Pneumonia**")
+    else:
+        st.success(f"**{1 - prediction:.2%} chance of Normal lungs**")
