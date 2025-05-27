@@ -142,19 +142,40 @@ history_cnn = model_cnn.fit(train,
 
 The following graphs show the evolution of **training and validation accuracy and loss** across 30 epochs:
 
-![Training Curves](./path/to/training_accuracy_loss.png)
+![Training Curves](https://github.com/RafaelGallo/Neural-Network-Convolutional-Pneumonia-X/blob/main/img/004.png?raw=true)
 
 ### 🔍 Confusion Matrix (Test Set)
 
 The confusion matrix provides a visual summary of model performance on the test set:
 
-![Confusion Matrix](./path/to/confusion_matrix.png)
+![Confusion Matrix](https://github.com/RafaelGallo/Neural-Network-Convolutional-Pneumonia-X/blob/main/img/003.png?raw=true)
 
 ### 🖼️ Prediction Samples
 
 The model was also tested on individual X-ray images. Below is a sample of predictions showing the **predicted class, probability, and ground truth**:
 
-![Sample Predictions](./path/to/prediction_grid.png)
+![Sample Predictions](https://github.com/RafaelGallo/Neural-Network-Convolutional-Pneumonia-X/blob/main/img/002.png?raw=true)
+
+## 📊 Evaluation Metrics
+
+The model was evaluated on the test set using common classification metrics:
+
+- **Precision**: How many predicted positives were correct
+- **Recall**: How many actual positives were captured
+- **F1-Score**: Harmonic mean of precision and recall
+- **Support**: Number of samples per class
+
+### 📋 Classification Report
+
+![Classification Report](https://github.com/RafaelGallo/Neural-Network-Convolutional-Pneumonia-X/blob/main/img/005.png?raw=true)
+
+| Metric     | Normal      | Pneumonia   | Average     |
+|------------|-------------|-------------|-------------|
+| Precision  | 0.96        | 0.89        | —           |
+| Recall     | 0.79        | 0.98        | —           |
+| F1-score   | 0.87        | 0.93        | 0.90 (macro) |
+| Accuracy   |             |             | **0.91**     |
+
 
 ## ✅ Summary
 
