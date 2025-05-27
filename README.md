@@ -7,7 +7,31 @@
 
 ## 📌 Overview
 
-This project leverages **Convolutional Neural Networks (CNNs)** to automatically classify chest X-ray images as either **Normal** or **Pneumonia**. It aims to assist radiologists with an AI-driven diagnostic tool using powerful deep learning models — trained and evaluated on a balanced version of the well-known **Chest X-Ray Images (Pneumonia)** dataset.
+This project leverages state-of-the-art **Convolutional Neural Networks (CNNs)** to automatically classify **chest X-ray images** into two categories: **Normal** (healthy lungs) and **Pneumonia** (lung opacity detected). It is designed as an **AI-powered diagnostic support system** to assist radiologists and healthcare professionals by improving **diagnostic accuracy**, **reducing interpretation time**, and supporting early detection efforts.
+
+To achieve this, we applied both **custom CNN architectures** and **pretrained deep learning models** including:
+
+* 🔹 **VGG16**
+* 🔹 **ResNet50**
+* 🔹 **InceptionV3**
+* 🔹 A custom **Sequential CNN**
+
+All models utilize **ImageNet-based transfer learning** where applicable, and were trained on a **carefully restructured version of Paul Mooney’s Chest X-Ray Pneumonia dataset** to ensure balanced and fair evaluation across both classes.
+
+This project integrates all critical aspects of deep learning in medical imaging:
+
+* ✅ End-to-end image preprocessing
+* ✅ Data augmentation
+* ✅ Class balancing
+* ✅ Model training with callbacks
+* ✅ Performance evaluation with accuracy, precision, recall, F1-score, AUC
+* ✅ Visualization tools including loss curves, confusion matrix, and prediction subplots
+
+By combining domain knowledge with modern deep learning practices, the resulting models have the potential to:
+
+* Enhance radiological workflows
+* Improve diagnosis in low-resource settings
+* Serve as a foundation for more complex medical imaging applications (e.g., multi-class classification or severity grading)
 
 ## 🏗️ Models Used
 
@@ -25,6 +49,19 @@ Adapted from Paul Mooney's *Chest X-Ray Images (Pneumonia)*:
 - Training: **4,192** (1,082 normal | 3,110 pneumonia)
 - Validation: **1,040** (267 normal | 773 pneumonia)
 - Testing: **624** (234 normal | 390 pneumonia)
+
+## 📂 Dataset Source
+
+The dataset used in this project is an adapted version of the publicly available:
+
+**📦 Chest X-Ray Images (Pneumonia)** by Paul Mooney  
+
+🔗 [Kaggle Dataset Link](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
+
+- Contains 5,856 labeled chest X-ray images
+- Two classes: `NORMAL` and `PNEUMONIA`
+- Split into training, validation, and test sets
+- Reformatted in this project for a more balanced machine learning task
 
 
 ## 🧪 Deep learning Task
