@@ -82,6 +82,96 @@ Each model is evaluated using:
 - 🖼️ Image Subplots (True vs Predicted)
 
 
+## 🧱 Custom CNN Model Architecture
+
+In addition to pretrained models like VGG16, ResNet50, and InceptionV3, this project also implements a **custom Sequential Convolutional Neural Network (CNN)** trained from scratch using grayscale chest X-ray images.
+
+### 📐 **Model Architecture**
+
+```python
+model_cnn = Sequential()
+model_cnn.add(Conv2D(32, (3, 3), activation="relu", input_shape=(img_width, img_height, 1)))
+model_cnn.add(MaxPooling2D(pool_size=(2, 2)))
+
+model_cnn.add(Conv2D(32, (3, 3), activation="relu"))
+model_cnn.add(MaxPooling2D(pool_size=(2, 2)))
+
+model_cnn.add(Conv2D(32, (3, 3), activation="relu"))
+model_cnn.add(MaxPooling2D(pool_size=(2, 2)))
+
+model_cnn.add(Conv2D(64, (3, 3), activation="relu"))
+model_cnn.add(MaxPooling2D(pool_size=(2, 2)))
+
+model_cnn.add(Conv2D(64, (3, 3), activation="relu"))
+model_cnn.add(MaxPooling2D(pool_size=(2, 2)))
+
+model_cnn.add(Flatten())
+model_cnn.add(Dense(128, activation='relu'))
+model_cnn.add(Dense(64, activation='relu'))
+model_cnn.add(Dense(1, activation='sigmoid'))
+```
+
+### ⚙️ **Compilation and Training**
+
+The model was compiled with the **Adam optimizer**, and trained using **binary crossentropy** loss and the **accuracy** metric. Additionally, we used:
+
+* `EarlyStopping` to halt training when validation loss stops improving
+* `ReduceLROnPlateau` to adjust learning rate dynamically
+* `compute_class_weight` to handle class imbalance
+
+```python
+model_cnn.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+early = EarlyStopping(monitor='val_loss', mode='min', patience=3)
+lr_reduction = ReduceLROnPlateau(monitor='val_loss', patience=2, factor=0.3, verbose=1, min_lr=1e-6)
+
+# Balanced class weights
+weights = compute_class_weight(class_weight='balanced', classes=np.unique(train.classes), y=train.classes)
+cw = dict(zip(np.unique(train.classes), weights))
+
+# Training
+history_cnn = model_cnn.fit(train,
+                            epochs=50,
+                            validation_data=valid,
+                            class_weight=cw)
+```
+
+## 📈 Model Performance
+
+### Training Curves
+
+The following graphs show the evolution of **training and validation accuracy and loss** across 30 epochs:
+
+![Training Curves](./path/to/training_accuracy_loss.png)
+
+### 🔍 Confusion Matrix (Test Set)
+
+The confusion matrix provides a visual summary of model performance on the test set:
+
+![Confusion Matrix](./path/to/confusion_matrix.png)
+
+### 🖼️ Prediction Samples
+
+The model was also tested on individual X-ray images. Below is a sample of predictions showing the **predicted class, probability, and ground truth**:
+
+![Sample Predictions](./path/to/prediction_grid.png)
+
+## ✅ Summary
+
+* The custom CNN achieved strong performance on both training and validation sets.
+* Results demonstrate effective generalization to unseen chest X-ray images.
+* The model serves as a **baseline** to compare with pretrained models such as VGG16, ResNet50, and InceptionV3.
+
+### ✅ Optional: Replace paths
+
+You can update the image paths in the markdown:
+
+```markdown
+![Training Curves](./images/training_accuracy_loss.png)
+![Confusion Matrix](./images/confusion_matrix.png)
+![Sample Predictions](./images/prediction_grid.png)
+```
+
 ## 🚀 How to Run
 
 1. Clone the repository:
