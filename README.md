@@ -4,6 +4,8 @@
 ![Dataset](https://img.shields.io/badge/dataset-Chest%20X--Ray%20(Pneumonia)-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-Completed-success)
+[![Streamlit App](https://img.shields.io/badge/launch-app-brightgreen?logo=streamlit)](https://neural-network-convolutional-pneumonia-x-hc6qwxafrsdnvb3kcdq8h.streamlit.app/)
+
 
 ## 📌 Overview
 
@@ -256,8 +258,22 @@ if uploaded_file is not None:
     st.markdown(f"**Confidence:** {confidence:.2%}")
 ```
 
----
+## 🚀 Try it Live
 
+You can test the Pneumonia X-ray Classification model directly in your browser:
+
+🔗 **[🩺 Open the App on Streamlit Cloud](https://neural-network-convolutional-pneumonia-x-hc6qwxafrsdnvb3kcdq8h.streamlit.app/)**
+
+The app allows you to:
+- Upload a chest X-ray (`.png`, `.jpg`, `.jpeg`)
+- Get an instant prediction of **NORMAL** or **PNEUMONIA**
+- Download a medical-style PDF report
+- View classification history with timestamps and confidence scores
+
+[![Streamlit App](https://img.shields.io/badge/launch-app-brightgreen?logo=streamlit)](https://neural-network-convolutional-pneumonia-x-hc6qwxafrsdnvb3kcdq8h.streamlit.app/)
+
+
+---
 ## 🚀 How to Run
 
 1. Clone the repository:
